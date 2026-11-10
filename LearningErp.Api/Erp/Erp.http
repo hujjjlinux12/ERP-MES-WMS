@@ -1,0 +1,48 @@
+@Erp_HostAddress = http://localhost:5235
+@baseUrl = http://localhost:5235
+
+GET {{Erp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###新增物料
+POST {{baseUrl}}/api/materials
+Content-Type:application/json
+
+{
+    "code":"POWER-001",
+    "name":"电源板",
+    "unit":"PCS"
+}
+
+###查询新增的物料
+GET {{baseUrl}}/api/materials/POWER-001
+
+### 修改主板信息
+PUT http://localhost:5235/api/materials/PCB-001
+Content-Type: application/json
+
+{
+  "name":"显示器控制主板",
+  "unit":"个"
+}
+
+### 查询修改结果
+GET http://localhost:5235/api/materials/PCB-001
+
+### 修改不存在的物料
+PUT http://localhost:5235/api/materials/UNKNOWN
+Content-Type: application/json
+
+{
+  "name":"测试物料",
+  "unit":"PCS"
+}
+
+### 提交空名称
+PUT http://localhost:5235/api/materials/PCB-001
+Content-Type: application/json
+
+{
+  "name":"",
+  "unit":"PCS"
+}

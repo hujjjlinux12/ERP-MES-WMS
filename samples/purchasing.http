@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:5080
+
+### 初始化资料
+GET {{baseUrl}}/api/catalog
+
+### 创建订单；将响应的 id 与 lines[0].id 填入下方变量
+POST {{baseUrl}}/api/purchase-orders
+Content-Type: application/json
+
+{"supplierCode":"SUP-001","lines":[{"materialCode":"PCB-001","quantity":10,"unitPrice":2.5}]}
+
+### 手工替换为上一步返回值
+@orderId = REPLACE_WITH_ORDER_ID
+@lineId = REPLACE_WITH_ORDER_LINE_ID
+
+### 提交
+POST {{baseUrl}}/api/purchase-orders/{{orderId}}/submit
+Content-Type: application/json
+
+{"actor":"buyer-demo"}
+
+### 审批
+POST {{baseUrl}}/api/purchase-orders/{{orderId}}/approve
+Content-Type: application/json
+
+{"actor":"approver-demo"}
+
+### 分批收货；相同内容重发不会重复入库，新一笔收货需更换 requestId
+POST {{baseUrl}}/api/purchase-orders/{{orderId}}/receipts
+Content-Type: application/json
+
+{"requestId":"90240ace-fdd6-44f5-88bd-7a12ed36a001","warehouseCode":"RM-01","actor":"warehouse-demo","lines":[{"orderLineId":"{{lineId}}","quantity":4}]}
+
+### 库存余额应为 4
+GET {{baseUrl}}/api/inventory/balances
+
+### 库存流水应只有一笔
+GET {{baseUrl}}/api/inventory/ledger

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>制造 ERP · 工作台</title>
+    <link rel="stylesheet" href="/erp.css">
+    <script src="/erp.js" defer></script>
+</head>
+<body class="erp-page">
+    <nav class="erp-nav" aria-label="ERP 模块">
+        <a class="brand" href="/">制造 ERP</a>
+        <a href="#materials">物料</a>
+        <a href="#suppliers">供应商</a>
+        <a href="/purchase-orders.html">采购单</a>
+    </nav>
+
+    <main class="erp-main">
+        <header class="hero">
+            <small>制造 ERP / 采购基础资料</small>
+            <h1>ERP 工作台</h1>
+            <p>维护物料和供应商，再用这些资料创建采购单。</p>
+            <a href="/purchase-orders.html">进入采购单 →</a>
+        </header>
+
+        <section class="panel" id="materials">
+            <div class="toolbar">
+                <h2>物料管理</h2>
+                <label>
+                    启用状态
+                    <select id="material-filter">
+                        <option value="">全部</option>
+                        <option value="true">已启用</option>
+                        <option value="false">已停用</option>
+                    </select>
+                </label>
+            </div>
+
+            <form id="material-form" class="fields">
+                <label>编码 <input name="code" required></label>
+                <label>名称 <input name="name" required></label>
+                <label>单位 <input name="unit" value="PCS" required></label>
+                <button type="submit" id="material-save">新增物料</button>
+                <button type="button" id="material-cancel" hidden>取消编辑</button>
+            </form>
+
+            <p id="material-message" class="message" role="status"></p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>编码</th><th>名称</th><th>单位</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody id="material-rows"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel" id="suppliers">
+            <h2>供应商管理</h2>
+
+            <form id="supplier-form" class="fields">
+                <label>编码 <input name="code" required></label>
+                <label>名称 <input name="name" required></label>
+                <button type="submit">新增供应商</button>
+            </form>
+
+            <p id="supplier-message" class="message" role="status"></p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>编码</th><th>名称</th></tr></thead>
+                    <tbody id="supplier-rows"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

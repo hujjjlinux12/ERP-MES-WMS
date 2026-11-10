@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>采购单测试台</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #eff4fa;
+            color: #182b43;
+            font: 16px/1.5 system-ui, sans-serif;
+        }
+        main { max-width: 820px; margin: 40px auto; padding: 0 20px; }
+        header { margin-bottom: 24px; }
+        h1, h2, p { margin: 0 0 12px; }
+        .tag { color: #2454a4; font-weight: 700; }
+        .card {
+            background: white;
+            border: 1px solid #dbe4ef;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        label { display: grid; gap: 6px; font-weight: 600; }
+        select, input, button {
+            font: inherit;
+            padding: 9px 12px;
+            border: 1px solid #bccbdf;
+            border-radius: 8px;
+        }
+        select, input { width: 100%; min-width: 0; background: white; }
+        .line, .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: end;
+            margin-top: 12px;
+        }
+        .material { flex: 3 1 200px; }
+        .quantity { flex: 1 1 90px; }
+        button { cursor: pointer; color: #182b43; background: #edf3fb; }
+        button.primary { background: #2454a4; color: white; border-color: #2454a4; }
+        button:disabled { opacity: .55; cursor: default; }
+        pre {
+            background: #122238;
+            color: #e1edfc;
+            border-radius: 10px;
+            padding: 16px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+    <link rel="stylesheet" href="/erp.css">
+</head>
+<body>
+    <nav class="erp-nav" aria-label="ERP 模块">
+    <a class="brand" href="/">制造 ERP</a>
+    <a href="/#materials">物料</a>
+    <a href="/#suppliers">供应商</a>
+    <a href="/purchase-orders.html" aria-current="page">采购单</a>
+    </nav>
+<main>
+    <header>
+        <p class="tag">制造 ERP · 采购</p>
+        <h1>采购单测试台</h1>
+        <p>选择供应商和物料，创建采购单草稿。</p>
+    </header>
+
+    <form id="order-form" class="card">
+        <h2>新建采购单</h2>
+        <label>
+            供应商
+            <select id="supplier" required></select>
+        </label>
+        <div id="lines"></div>
+        <div class="actions">
+            <button id="add-line" type="button" disabled>＋ 添加明细</button>
+            <button id="save" class="primary" type="submit" disabled>创建草稿</button>
+        </div>
+    </form>
+
+    <section class="card">
+        <h2>查询采购单</h2>
+        <form id="lookup-form" class="actions">
+            <label>
+                采购单 ID
+                <input id="order-id" type="number" min="1" step="1" required>
+            </label>
+            <button type="submit">查询</button>
+        </form>
+        <p id="status" role="status">正在读取供应商和物料…</p>
+        <pre id="result">等待操作</pre>
+    </section>
+</main>
+
+<template id="line-template">
+    <div class="line">
+        <label class="material">物料 <select required></select></label>
+        <label class="quantity">
+            数量 <input type="number" min="1" step="1" value="1" required>
+        </label>
+        <button type="button">移除</button>
+    </div>
+</template>
+
+<script>
+    const supplier = document.querySelector("#supplier");
+    const lines = document.querySelector("#lines");
+    const addButton = document.querySelector("#add-line");
+    const saveButton = document.querySelector("#save");
+    const orderId = document.querySelector("#order-id");
+    const statusText = document.querySelector("#status");
+    const result = document.querySelector("#result");
+    let materials = [];
+
+    function fillOptions(select, items) {
+        select.replaceChildren(new Option("请选择", ""));
+        for (const item of items) {
+            select.add(new Option(`${item.code} · ${item.name}`, item.code));
+        }
+    }
+
+    function addLine() {
+        const row = document.querySelector("#line-template")
+            .content.firstElementChild.cloneNode(true);
+        fillOptions(row.querySelector("select"), materials);
+        row.querySelector("button").addEventListener("click", () => {
+            row.remove();
+            saveButton.disabled = lines.children.length === 0;
+        });
+        lines.append(row);
+        saveButton.disabled = false;
+    }
+
+    async function showResponse(response) {
+        statusText.textContent = `HTTP ${response.status} ${response.statusText}`;
+        const body = await response.text();
+        result.textContent = body || "响应正文为空。";
+
+        if (body && response.headers.get("Content-Type")?.includes("json")) {
+            const data = JSON.parse(body);
+            result.textContent = JSON.stringify(data, null, 2);
+            return data;
+        }
+
+        return null;
+    }
+
+    function showError(error) {
+        statusText.textContent = "请求失败";
+        result.textContent = error.message;
+    }
+
+    async function loadOptions() {
+        const supplierResponse = await fetch("/api/suppliers");
+        const materialResponse = await fetch("/api/materials?isActive=true");
+
+        if (!supplierResponse.ok || !materialResponse.ok) {
+            throw new Error("读取供应商或物料失败，请查看后端终端。");
+        }
+
+        const suppliers = await supplierResponse.json();
+        materials = await materialResponse.json();
+        fillOptions(supplier, suppliers);
+
+        if (suppliers.length === 0 || materials.length === 0) {
+            statusText.textContent = "创建采购单需要至少一个供应商和一条启用物料。";
+            return;
+        }
+
+        addButton.disabled = false;
+        addLine();
+        statusText.textContent = "请选择供应商和物料。";
+    }
+
+    addButton.addEventListener("click", addLine);
+
+    document.querySelector("#order-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        saveButton.disabled = true;
+        addButton.disabled = true;
+
+        const request = {
+            supplierCode: supplier.value,
+            lines: Array.from(lines.children, row => ({
+                materialCode: row.querySelector("select").value,
+                quantity: row.querySelector("input").valueAsNumber
+            }))
+        };
+
+        try {
+            const response = await fetch("/api/purchase-orders", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(request)
+            });
+            const data = await showResponse(response);
+            if (response.status === 201 && data) {
+                orderId.value = data.id;
+            }
+        } catch (error) {
+            showError(error);
+        } finally {
+            addButton.disabled = false;
+            saveButton.disabled = lines.children.length === 0;
+        }
+    });
+
+    document.querySelector("#lookup-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        try {
+            const response = await fetch(`/api/purchase-orders/${orderId.value}`);
+            await showResponse(response);
+        } catch (error) {
+            showError(error);
+        }
+    });
+
+    loadOptions().catch(showError);
+</script>
+</body>
+</html>

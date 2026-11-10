@@ -1,0 +1,46 @@
+.erp-nav {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 22px;
+    padding: 14px max(20px, calc((100% - 1040px) / 2));
+    background: #12243a;
+    font: 15px/1.5 system-ui, sans-serif;
+}
+.erp-nav a { color: #e4edf7; text-decoration: none; }
+.erp-nav a:hover, .erp-nav a[aria-current] { text-decoration: underline; }
+.erp-nav .brand { margin-right: auto; color: white; font-weight: 750; }
+
+.erp-page {
+    margin: 0;
+    background: #f0f4f8;
+    color: #172a40;
+    font: 15px/1.5 system-ui, sans-serif;
+}
+.erp-page * { box-sizing: border-box; }
+.erp-main { max-width: 1080px; margin: 28px auto; padding: 0 20px; }
+.hero, .panel { border-radius: 16px; padding: 24px; margin-bottom: 18px; }
+.hero { background: linear-gradient(120deg, #153451, #165957); color: white; }
+.hero h1 { margin: 6px 0; }
+.hero a { color: #c9ffec; }
+.panel { background: white; border: 1px solid #dce5ed; }
+.panel h2 { margin: 0; }
+.toolbar, .fields { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.toolbar { justify-content: space-between; }
+.fields { margin: 16px 0; }
+.fields label, .toolbar label { display: grid; gap: 4px; }
+.fields label { flex: 1 1 135px; }
+.erp-page input, .erp-page select, .erp-page button {
+    font: inherit; padding: 8px 11px; border: 1px solid #b9c9d6; border-radius: 8px;
+}
+.erp-page button { background: #edf4f8; color: #17384c; cursor: pointer; }
+.erp-page button[type="submit"] { background: #12665c; color: white; border-color: #12665c; }
+.erp-page button:disabled { opacity: .6; cursor: wait; }
+.message { min-height: 1.5em; color: #23576a; }
+.message[data-error="true"] { color: #a12535; }
+.table-wrap { overflow-x: auto; }
+.erp-page table { width: 100%; border-collapse: collapse; text-align: left; }
+.erp-page th, .erp-page td { padding: 9px 12px; border-bottom: 1px solid #e5ebf0; }
+.erp-page th { background: #f4f7fa; }
+.erp-page td button { margin: 2px 5px 2px 0; }
